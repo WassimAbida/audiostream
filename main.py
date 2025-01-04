@@ -1,3 +1,4 @@
+import logging
 import os
 
 import numpy as np
@@ -8,6 +9,13 @@ from fastapi.responses import HTMLResponse
 from lang_trans.arabic import buckwalter
 from tools import transcribe_audio
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
+
+logging.basicConfig(
+    level=logging.INFO,  # Set the log level to INFO
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",  # Log format
+    handlers=[logging.StreamHandler()],
+)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 # Load the processor and model
@@ -97,12 +105,12 @@ async def transcribe_multiple(files: list[UploadFile] = File(...)):
     return {"transcriptions": transcriptions}
 
 
-@app.websocket("/ws/transcribe_stream_v2/")
+@app.websocket("/ws/transcribe_stream/")
 async def transcribe_stream(websocket: WebSocket):
     client_host = websocket.client.host
-    print(f"Connection attempt from {client_host}")
+    logger.info(f"Connection attempt from {client_host}")
     await websocket.accept()
-    print(f"WebSocket connection accepted from {client_host}")
+    logger.info(f"WebSocket connection accepted from {client_host}")
     buffer = bytearray()
     SAMPLE_RATE = 16000  # Define your sample rate
     CHUNK_SIZE = SAMPLE_RATE * 2  # 1 second of audio, 16-bit samples (2 bytes per sample)
@@ -112,7 +120,7 @@ async def transcribe_stream(websocket: WebSocket):
             # Receive audio data from the WebSocket client
             try:
                 data = await websocket.receive_bytes()
-                print("Received data size:", len(data))
+                logger.info(f"Received data size: {len(data)}")
                 buffer.extend(data)
 
                 # Process every 1 second of audio
@@ -131,17 +139,17 @@ async def transcribe_stream(websocket: WebSocket):
                     # Send the transcription back to the client
                     await websocket.send_text(transcription)
                 else:
-                    print(f"len buffer {len(buffer)} is not sufficient {CHUNK_SIZE} )")
+                    logger.info(f"len buffer {len(buffer)} is not sufficient {CHUNK_SIZE} )")
 
             except websockets.exceptions.ConnectionClosed:
-                print("WebSocket connection closed by the client.")
+                logger.error("WebSocket connection closed by the client.")
                 break  # Exit the loop if the connection is closed
 
     except Exception as e:
-        print(f"WebSocket error: {e}")
+        logger.error(f"WebSocket error: {e}")
     finally:
         await websocket.close()
-        print("WebSocket connection closed.")
+        logger.info("WebSocket connection closed.")
 
 
 # @app.websocket("/ws")

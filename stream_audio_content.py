@@ -1,14 +1,22 @@
 import asyncio
+import logging
 
 import arabic_reshaper
 import soundfile as sf
 import websockets
 from bidi.algorithm import get_display
 
-WEBSOCKET_URL = "ws://localhost:8001/ws/transcribe_stream_v2/"
+logging.basicConfig(
+    level=logging.INFO,  # Set the log level to INFO
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",  # Log format
+    handlers=[logging.StreamHandler()],
+)
+logger = logging.getLogger(__name__)
+
+WEBSOCKET_URL = "ws://localhost:8001/ws/transcribe_stream/"
 
 # Audio file to stream
-AUDIO_FILE = "/Users/a1197/Downloads/projet_machine_learning/audio_data/audioPLus660.wav"
+AUDIO_FILE = "/Users/a1197/Downloads/projet_machine_learning/audio_data/audioPLus698.wav"
 
 
 async def send_heartbeat(websocket):
@@ -17,7 +25,7 @@ async def send_heartbeat(websocket):
             await websocket.ping()
             await asyncio.sleep(5)
         except websockets.exceptions.ConnectionClosed:
-            print("Connection closed")
+            logger.error("Connection closed")
             break
 
 
@@ -27,21 +35,24 @@ async def stream_audio_to_websocket(file_path, websocket_url):
     """
     try:
         # Open a WebSocket connection
-        print("launching websocket connection...")
+        all_stream = ""
+        logger.info("launching websocket connection...")
         async with websockets.connect(websocket_url) as websocket:
-            print(f"Connected to WebSocket server: {websocket_url}")
+            logger.info(f"Connected to WebSocket server: {websocket_url}")
             asyncio.create_task(send_heartbeat(websocket))
             # Open the audio file
             with sf.SoundFile(file_path, "rb") as audio_file:
                 # Check file properties
-                print(f"Streaming audio with sample rate: {audio_file.samplerate}, channels: {audio_file.channels}")
+                logger.info(
+                    f"Streaming audio with sample rate: {audio_file.samplerate}, channels: {audio_file.channels}"
+                )
 
                 # Stream the file in chunks
                 chunk_size = 16000  # Number of frames to send per message
                 while True:
                     # Read the next chunk of frames
                     audio_chunk = audio_file.read(chunk_size, dtype="int16")  # Change dtype as needed
-                    print("audio_chunk.size", audio_chunk.size)
+                    logger.info(f"audio_chunk.size, {audio_chunk.size}")
                     if not audio_chunk.size:
                         break  # End of file reached
                     # Send the audio chunk as binary data
@@ -49,14 +60,16 @@ async def stream_audio_to_websocket(file_path, websocket_url):
                     # Optionally, receive a server response (if the server sends back responses)
                     response = await websocket.recv()
 
-                    reshaped_text = arabic_reshaper.reshape(response)
-                    print("Server response:", get_display(reshaped_text))
-                print("Sending end of stream signal...")
+                    readable_text = arabic_reshaper.reshape(response)
+                    logger.info(f"Server response: {get_display(readable_text)}")
+
+                    all_stream += readable_text + " "
+                logger.info("Sending end of stream signal...")
                 await websocket.send(b"end_of_stream")  # End of stream signal as bytes
-                print("End of stream signal sent.")
-            print("Finished streaming audio.")
+                logger.info("End of stream signal sent.")
+            logger.info(f"Finished streaming audio: {get_display(all_stream)}")
     except Exception as e:
-        print(f"Error occurred: {e}")
+        logger.error(f"Error occurred: {e}")
 
 
 if __name__ == "__main__":
