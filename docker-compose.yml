@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # Service for the FastAPI application
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"  # Expose FastAPI on port 8000
+    volumes:
+      - .:/app  # Mount the current directory to /app in the container
+      - ./models:/app/models # Mount models directory to /app/models in the container
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    environment:
+      - PYTHONUNBUFFERED=1  # Keep Python logs unbuffered for real-time logging
+    networks:
+      - app-network
+
+  # Service for the streaming script
+  streaming:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app  # Mount the current directory to /app in the container
+    command: ["python", "stream_audio_content.py"]  # Command to run the script
+    depends_on:
+      - fastapi  # Ensure FastAPI service is running before the script starts
+    environment:
+      - PYTHONUNBUFFERED=1  # Keep Python logs unbuffered for real-time logging
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

@@ -14,8 +14,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-WEBSOCKET_URL = "ws://localhost:8001/ws/transcribe_stream/"
-AUDIO_FILE = "/Users/a1197/Downloads/projet_machine_learning/audio_data/audioPLus898.wav"
+WEBSOCKET_URL = "ws://fastapi:8000/ws/transcribe_stream/"
+AUDIO_FILE = "data/audioPLus211.wav"
 TARGET_AUDIO_SAMPLING = 16000
 CHUNK_SIZE = 32000  # Number of frames to send per message (1 second of audio)
 
