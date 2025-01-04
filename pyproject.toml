@@ -1,0 +1,19 @@
+[project]
+name = "project-audio"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.6",
+    "lang-trans>=0.6.0",
+    "python-multipart>=0.0.19",
+    "sounddevice>=0.5.1",
+    "soundfile>=0.12.1",
+    "torch >=2.5.1",
+    "torchaudio>=2.5.1",
+    "transformers>=4.47.0",
+    "uvicorn>=0.33.0",
+    "websocket-client>=1.8.0",
+    "websocket>=0.2.1",
+]

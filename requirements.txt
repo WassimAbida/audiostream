@@ -1,0 +1,11 @@
+fastapi 
+websocket
+uvicorn[standard]
+soundfile
+transformers
+torch
+torchaudio
+lang_trans
+python-multipart
+python-socketio
+librosa 
