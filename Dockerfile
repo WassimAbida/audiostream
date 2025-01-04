@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy all files from the local directory to the container
 COPY main.py .
 COPY tools.py .
-# COPY /models /models 
+# COPY /models /models
 
 # Expose port for FastAPI
 EXPOSE 8000

@@ -1,4 +1,4 @@
-fastapi 
+fastapi
 websocket
 uvicorn[standard]
 soundfile
@@ -8,6 +8,7 @@ torchaudio
 lang_trans
 python-multipart
 python-socketio
-librosa 
+librosa
 python-bidi
 arabic_reshaper
+pre-commit

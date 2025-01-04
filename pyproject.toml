@@ -1,19 +1,96 @@
-[project]
-name = "project-audio"
+[tool.poetry]
+name = "audiostream"
 version = "0.1.0"
-description = "Add your description here"
+description = "audiostream python dependencies"
+authors = ["Wassim Abida <wassim.abida14@gmail.com>"]
 readme = "README.md"
-requires-python = ">=3.12"
-dependencies = [
-    "fastapi>=0.115.6",
-    "lang-trans>=0.6.0",
-    "python-multipart>=0.0.19",
-    "sounddevice>=0.5.1",
-    "soundfile>=0.12.1",
-    "torch >=2.5.1",
-    "torchaudio>=2.5.1",
-    "transformers>=4.47.0",
-    "uvicorn>=0.33.0",
-    "websocket-client>=1.8.0",
-    "websocket>=0.2.1",
+package-mode = false
+
+
+
+
+[tool.poetry.dependencies]
+python = "3.12.8"
+
+[tool.poetry.group.dev.dependencies]
+pylint = "^3.2.6"
+pre-commit = "^3.8.0"
+
+
+[[tool.poetry.source]]
+name = "pytorch_cpu"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "explicit"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 120
+target-version = ['py312']
+include = '\.pyi?$'
+extend-exclude = '/(# The following are specific to Black, you probably dont want those. | blib2to3 | tests/data | profiling)/'
+
+[tool.isort]
+skip = "__init__.py"
+skip_glob = [".venv/*"]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 88
+combine_star = true
+no_lines_before = ["LOCALFOLDER"]
+src_paths = ["api", "lavaflow"]
+sections = ["FUTURE",  "STDLIB",  "THIRDPARTY",  "FIRSTPARTY",  "LOCALFOLDER"]
+
+[tool.flake8]
+per-file-ignores = "__init__.py:F401"
+ignore = "F403, F405, W503, W605"
+max-line-length = 120
+enable-extensions = "M511"
+exclude = [".venv/"]
+
+[tool.mypy]
+packages = ["api", "lavaflow"]
+python_version = "3.12"
+ignore_missing_imports = true
+strict = true
+disallow_untyped_defs = true
+disallow_untyped_calls = true
+
+[tool.pytest.ini_options]
+log_cli = "false"
+addopts = "-p no:logging"
+filterwarnings = [
+    "ignore::Warning",
+    "ignore::DeprecationWarning",
+    "ignore::FutureWarning",
 ]
+
+[tool.coverage.report]
+exclude_lines = [
+    "if __name__ == '__main__':",
+    "def __repr__",
+    "def __str__",
+    "def test_",
+]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "tests/*",
+    "*/test*.py",
+    "test*.py",
+    "*/__init__.py",
+    "__init__.py",
+    "*/venv/*",
+    "*/env/*",
+    "*/.venv/*",
+    "*/.env/*",
+    "*/.tox/*",
+    "*/node_modules/*",
+    "*/site-packages/*",
+]
+show_missing = true
+#fail_under = 85  # FIXME: activate me whenever ready !

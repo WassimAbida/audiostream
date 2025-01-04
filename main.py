@@ -1,16 +1,13 @@
-from fastapi import FastAPI, File, UploadFile, WebSocket, WebSocketDisconnect
 import os
-import soundfile as sf
-from io import BytesIO
-import websockets
-from fastapi.responses import HTMLResponse
+
 import numpy as np
-import logging 
-from lang_trans.arabic import buckwalter
-from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
 import torch
-from tools import transcribe_multiple_audio, transcribe_audio
-import torchaudio
+import websockets
+from fastapi import FastAPI, File, UploadFile, WebSocket
+from fastapi.responses import HTMLResponse
+from lang_trans.arabic import buckwalter
+from tools import transcribe_audio
+from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 
 app = FastAPI()
 # Load the processor and model
@@ -21,7 +18,7 @@ processor = Wav2Vec2Processor.from_pretrained(model_name, cache_dir="models")
 model = Wav2Vec2ForCTC.from_pretrained(model_name, force_download=False, cache_dir="models")
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = model.to(device) 
+model = model.to(device)
 # audio_files = os.listdir("./data")
 # transcriptions = transcribe_multiple_audio(audio_files, processor, model, device )
 
@@ -66,6 +63,7 @@ html = """
 async def get():
     return HTMLResponse(html)
 
+
 # Endpoint to transcribe a single audio file
 @app.post("/transcribe/")
 async def transcribe(file: UploadFile = File(...)):
@@ -74,10 +72,11 @@ async def transcribe(file: UploadFile = File(...)):
     with open(temp_file, "wb") as f:
         f.write(await file.read())
 
-    transcription =  transcribe_audio(temp_file, processor, model, device )
+    transcription = transcribe_audio(temp_file, processor, model, device)
     os.remove(temp_file)
 
     return {"file_name": file.filename, "transcription": transcription}
+
 
 # Endpoint to process multiple audio files
 @app.post("/transcribe_multiple/")
@@ -90,9 +89,9 @@ async def transcribe_multiple(files: list[UploadFile] = File(...)):
         with open(temp_file, "wb") as f:
             f.write(await file.read())
 
-        transcription = transcribe_audio(temp_file, processor, model, device )
+        transcription = transcribe_audio(temp_file, processor, model, device)
         transcriptions[file.filename] = transcription
-        
+
         os.remove(temp_file)
 
     return {"transcriptions": transcriptions}
@@ -106,7 +105,7 @@ async def transcribe_stream(websocket: WebSocket):
     print(f"WebSocket connection accepted from {client_host}")
     buffer = bytearray()
     SAMPLE_RATE = 16000  # Define your sample rate
-    CHUNK_SIZE = SAMPLE_RATE * 2 # 1 second of audio, 16-bit samples (2 bytes per sample)
+    CHUNK_SIZE = SAMPLE_RATE * 2  # 1 second of audio, 16-bit samples (2 bytes per sample)
 
     try:
         while True:
@@ -117,7 +116,7 @@ async def transcribe_stream(websocket: WebSocket):
                 buffer.extend(data)
 
                 # Process every 1 second of audio
-                if len(buffer) >= CHUNK_SIZE :#CHUNK_SIZE:
+                if len(buffer) >= CHUNK_SIZE:  # CHUNK_SIZE:
                     # Convert the buffer to a waveform tensor
                     audio_samples = np.frombuffer(buffer[:CHUNK_SIZE], dtype=np.int16).astype(np.float32) / 32768.0
                     audio_tensor = torch.tensor([audio_samples]).to(device)  # Add batch dimension
@@ -144,6 +143,7 @@ async def transcribe_stream(websocket: WebSocket):
         await websocket.close()
         print("WebSocket connection closed.")
 
+
 # @app.websocket("/ws")
 # async def websocket_endpoint(websocket: WebSocket):
 #     await websocket.accept()
@@ -156,7 +156,6 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(app, host="0.0.0.0", port=8080)
-
 
 
 # uvicorn main:app --host 0.0.0.0 --port 8080 --reload --access-log

@@ -1,7 +1,6 @@
-
-from lang_trans.arabic import buckwalter
 import torch
 import torchaudio
+from lang_trans.arabic import buckwalter
 
 
 def load_audio(file_path):
@@ -13,7 +12,7 @@ def load_audio(file_path):
     return speech
 
 
-def transcribe_audio(file_path, processor, model, device ):
+def transcribe_audio(file_path, processor, model, device):
     audio = load_audio(file_path)
     inputs = processor(audio, sampling_rate=16000, return_tensors="pt", padding=True)
     inputs = {key: value.to(device) for key, value in inputs.items()}  # Move inputs to GP
@@ -26,11 +25,12 @@ def transcribe_audio(file_path, processor, model, device ):
     # Return transcription in Arabic with Buckwalter encoding
     return buckwalter.untrans(transcription)
 
+
 # Function to process multiple audio files
-def transcribe_multiple_audio(files_list, processor, model, device ):
+def transcribe_multiple_audio(files_list, processor, model, device):
     transcriptions = {}
     for file_path in files_list:
-        if file_path.endswith('.wav'):
-          transcription = transcribe_audio(f"./data/{file_path}", processor, model, device )
-          transcriptions[file_path] = transcription
+        if file_path.endswith(".wav"):
+            transcription = transcribe_audio(f"./data/{file_path}", processor, model, device)
+            transcriptions[file_path] = transcription
     return transcriptions
