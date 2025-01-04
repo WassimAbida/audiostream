@@ -10,6 +10,7 @@ from lang_trans.arabic import buckwalter
 from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
 import torch
 from tools import transcribe_multiple_audio, transcribe_audio
+import torchaudio
 
 app = FastAPI()
 # Load the processor and model
@@ -73,10 +74,7 @@ async def transcribe(file: UploadFile = File(...)):
     with open(temp_file, "wb") as f:
         f.write(await file.read())
 
-    # Get the transcription
     transcription =  transcribe_audio(temp_file, processor, model, device )
-    
-    # Remove the temporary file after processing
     os.remove(temp_file)
 
     return {"file_name": file.filename, "transcription": transcription}
@@ -119,7 +117,7 @@ async def transcribe_stream(websocket: WebSocket):
                 buffer.extend(data)
 
                 # Process every 1 second of audio
-                if len(buffer) >= 0 :#CHUNK_SIZE:
+                if len(buffer) >= CHUNK_SIZE :#CHUNK_SIZE:
                     # Convert the buffer to a waveform tensor
                     audio_samples = np.frombuffer(buffer[:CHUNK_SIZE], dtype=np.int16).astype(np.float32) / 32768.0
                     audio_tensor = torch.tensor([audio_samples]).to(device)  # Add batch dimension
@@ -132,7 +130,6 @@ async def transcribe_stream(websocket: WebSocket):
                     transcription = processor.batch_decode(predicted_ids)[0]
                     transcription = buckwalter.untrans(transcription)
                     # Send the transcription back to the client
-                    print("Transcription:", transcription)
                     await websocket.send_text(transcription)
                 else:
                     print(f"len buffer {len(buffer)} is not sufficient {CHUNK_SIZE} )")

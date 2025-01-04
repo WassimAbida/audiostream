@@ -9,5 +9,5 @@ docker run -p 8000:8000 -v models:/models websocket-app
 
 ```bash
 uvicorn main:app --host 0.0.0.0 --port 8001 
-run stream_audio_content
+python -m stream_audio_content
 ```

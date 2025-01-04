@@ -1,12 +1,14 @@
 import asyncio
 import websockets
 import soundfile as sf
+from bidi.algorithm import get_display
+import arabic_reshaper
 
 
 WEBSOCKET_URL = "ws://localhost:8001/ws/transcribe_stream_v2/"
 
 # Audio file to stream
-AUDIO_FILE = "/Users/a1197/Downloads/projet_machine_learning/audio_data/audioPLus407.wav"
+AUDIO_FILE = "/Users/a1197/Downloads/projet_machine_learning/audio_data/audioPLus660.wav"
 
 async def send_heartbeat(websocket):
     while True:
@@ -40,14 +42,13 @@ async def stream_audio_to_websocket(file_path, websocket_url):
                     print("audio_chunk.size",audio_chunk.size)
                     if not audio_chunk.size:
                         break  # End of file reached
-                    
                     # Send the audio chunk as binary data
-                    print("sending...")
                     await websocket.send(audio_chunk.tobytes())
-                    print("data sent.")
                     # Optionally, receive a server response (if the server sends back responses)
                     response = await websocket.recv()
-                    print("Server response:", response)
+
+                    reshaped_text = arabic_reshaper.reshape(response)
+                    print("Server response:", get_display(reshaped_text))
                 print("Sending end of stream signal...")
                 await websocket.send(b"end_of_stream")  # End of stream signal as bytes
                 print("End of stream signal sent.")

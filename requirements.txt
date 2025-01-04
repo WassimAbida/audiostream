@@ -9,3 +9,5 @@ lang_trans
 python-multipart
 python-socketio
 librosa 
+python-bidi
+arabic_reshaper
