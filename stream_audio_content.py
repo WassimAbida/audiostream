@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 WEBSOCKET_URL = "ws://fastapi:8000/ws/transcribe_stream/"
 AUDIO_FILE = "data/audioPLus211.wav"
 TARGET_AUDIO_SAMPLING = 16000
-CHUNK_SIZE = 32000  # Number of frames to send per message (1 second of audio)
+CHUNK_SIZE = 16000  # Number of frames to send per message (1 second of audio)
 
 
 # Heartbeat mechanism to maintain WebSocket connection
@@ -36,6 +36,7 @@ def resample_audio(audio_chunk, original_rate, target_rate):
     logger.info(f"Resampling audio from {original_rate}Hz to {target_rate}Hz")
     audio_float = audio_chunk.astype("float32") / 32768.0  # Normalize to [-1, 1]
     resampled_audio = librosa.resample(audio_float, orig_sr=original_rate, target_sr=target_rate)
+    logger.info(f"Resampled audio, {resampled_audio.shape}")
     return (resampled_audio * 32768.0).astype("int16")
 
 
@@ -59,7 +60,6 @@ async def stream_audio_to_websocket(file_path, websocket_url):
 
                 # Ensure the sample rate is consistent before streaming
                 if audio_file.samplerate != TARGET_AUDIO_SAMPLING:
-                    logger.info(f"Resampling audio from {audio_file.samplerate}Hz to {TARGET_AUDIO_SAMPLING}Hz")
                     full_audio = audio_file.read(dtype="int16")
                     full_audio_resampled = resample_audio(full_audio, audio_file.samplerate, TARGET_AUDIO_SAMPLING)
                     audio_file = sf.SoundFile(full_audio_resampled, mode="r", samplerate=TARGET_AUDIO_SAMPLING)
