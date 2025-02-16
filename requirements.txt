@@ -12,3 +12,4 @@ librosa
 python-bidi
 arabic_reshaper
 pre-commit
+locust

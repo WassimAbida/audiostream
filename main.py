@@ -1,5 +1,6 @@
 import logging
 import os
+import shutil
 
 import numpy as np
 import torch
@@ -81,7 +82,7 @@ async def transcribe(file: UploadFile = File(...)):
     # Save the uploaded file temporarily
     temp_file = f"temp_{file.filename}"
     with open(temp_file, "wb") as f:
-        f.write(await file.read())
+        shutil.copyfileobj(file.file, f)
 
     transcription = transcribe_audio(temp_file, processor, model, device)
     os.remove(temp_file)

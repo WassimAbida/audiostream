@@ -17,3 +17,6 @@ poetry run python -m stream_audio_content
 docker-compose up fastapi
 docker-compose up streaming
 ```
+
+### Launch Load test using locust server
+locust -f locustfile.py --host=http://localhost:8000

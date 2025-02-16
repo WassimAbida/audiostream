@@ -15,9 +15,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 WEBSOCKET_URL = "ws://fastapi:8000/ws/transcribe_stream/"
-AUDIO_FILE = "data/audioPLus211.wav"
+AUDIO_FILE = "data/audioPLus898.wav"
 TARGET_AUDIO_SAMPLING = 16000
-CHUNK_SIZE = 16000  # Number of frames to send per message (1 second of audio)
+CHUNK_SIZE = 32000  # Number of frames to send per message (1 second of audio)
+
+# corpus quran,
+# test de charge,
+# prb: multiple audio on same time, OOM
+# compute time measure n-iter
 
 
 # Heartbeat mechanism to maintain WebSocket connection
