@@ -15,15 +15,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 WEBSOCKET_URL = "ws://fastapi:8000/ws/transcribe_stream/"
-AUDIO_FILE = "data/audioPLus898.wav"
+AUDIO_FILE = "data/audioPLus211.wav"
 TARGET_AUDIO_SAMPLING = 16000
 CHUNK_SIZE = 32000  # Number of frames to send per message (1 second of audio)
-
-# corpus quran,
-# test de charge,
-# prb: multiple audio on same time, OOM
-# compute time measure n-iter
-
 
 # Heartbeat mechanism to maintain WebSocket connection
 async def send_heartbeat(websocket):
@@ -36,7 +30,6 @@ async def send_heartbeat(websocket):
             break
 
 
-# Resample audio if the sample rate differs from the target rate
 def resample_audio(audio_chunk, original_rate, target_rate):
     logger.info(f"Resampling audio from {original_rate}Hz to {target_rate}Hz")
     audio_float = audio_chunk.astype("float32") / 32768.0  # Normalize to [-1, 1]
@@ -70,7 +63,6 @@ async def stream_audio_to_websocket(file_path, websocket_url):
                     audio_file = sf.SoundFile(full_audio_resampled, mode="r", samplerate=TARGET_AUDIO_SAMPLING)
 
                 # Stream the file in chunks
-
                 while True:
                     audio_chunk = audio_file.read(CHUNK_SIZE, dtype="int16")
                     if not audio_chunk.size:
